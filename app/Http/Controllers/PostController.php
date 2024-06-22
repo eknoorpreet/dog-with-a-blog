@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -33,6 +34,7 @@ class PostController extends Controller
     // Laravel will automatically query the database through the lens of the Post model
     public function viewPost(Post $post)
     {
+        $post['body'] = Str::markdown($post->body);
         return view('single-post', ['post' => $post]);
     }
 }
