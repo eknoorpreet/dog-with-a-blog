@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-// use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Gate;
 
 use App\Models\Post;
 use App\Policies\PostPolicy;
@@ -27,6 +27,9 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        //
+        // Setup a gate
+        Gate::define('visitAdminPages', function ($user) {
+            return $user->isAdmin === 1;
+        });
     }
 }

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class UserController extends Controller
 {
@@ -66,6 +69,34 @@ class UserController extends Controller
     public function viewProfile(User $user)
     {
         $posts = $user->posts();
-        return view('profile-posts', ['username' => $user->username, 'posts' => $posts->latest()->get(), 'postCount' => $posts->count()]);
+        return view('profile-posts', ['avatar' => $user->avatar, 'username' => $user->username, 'posts' => $posts->latest()->get(), 'postCount' => $posts->count()]);
+    }
+
+    public function showAvatarForm()
+    {
+        return view('avatar-form');
+    }
+
+    public function updateAvatar(Request $request, User $user)
+    {
+        $request->validate(['avatar' => 'required|image|max:3000']);
+        $user = auth()->user();
+        $filename = $user->id . "-" . uniqid() . ".jpg";
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read($request->file('avatar'));
+        // returns the raw resized data to save somewhere
+        $imgData = $image->cover(120, 120)->toJpeg();
+        Storage::put('public/avatars/' .  $filename, $imgData);
+
+        // Access old avatar
+        $oldAvatar = $user->avatar;
+        $user->avatar = $filename;
+        $user->save();
+
+        // Delete old avatar
+        if ($oldAvatar != "/fallback-avatar.jpg") {
+            Storage::delete(str_replace('/storage/', 'public/', $oldAvatar));
+        }
+        return back()->with('success', 'You have successfully updated your avatar!');
     }
 }
