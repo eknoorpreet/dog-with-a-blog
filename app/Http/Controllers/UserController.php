@@ -62,4 +62,10 @@ class UserController extends Controller
             return view('homepage');
         }
     }
+
+    public function viewProfile(User $user)
+    {
+        $posts = $user->posts();
+        return view('profile-posts', ['username' => $user->username, 'posts' => $posts->latest()->get(), 'postCount' => $posts->count()]);
+    }
 }
