@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExampleController;
+use App\Http\Controllers\FollowController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Gate;
@@ -34,6 +35,8 @@ Route::put('/post/{post}', [PostController::class, 'updateForm'])->middleware('c
 
 // Profile-related routes
 Route::get('/profile/{user:username}', [UserController::class, 'viewProfile']);
+Route::get('/profile/{user:username}/followers', [UserController::class, 'viewProfileFollowers']);
+Route::get('/profile/{user:username}/following', [UserController::class, 'viewProfileFollowing']);
 Route::get('/manage-avatar', [UserController::class, 'showAvatarForm'])->middleware('mustBeLoggedIn');
 Route::post('/manage-avatar', [UserController::class, 'updateAvatar'])->middleware('mustBeLoggedIn');
 
@@ -44,3 +47,7 @@ Route::get('/admins-exclusive', function () {
     // };
     return 'Only admins (like you!) can access this page!';
 })->middleware('can:visitAdminPages');
+
+// Follow-routes
+Route::post('/create-follow/{user:username}', [FollowController::class, 'createFollow'])->middleware('mustBeLoggedIn');
+Route::post('/remove-follow/{user:username}', [FollowController::class, 'removeFollow'])->middleware('mustBeLoggedIn');
