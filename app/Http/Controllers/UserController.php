@@ -57,6 +57,22 @@ class UserController extends Controller
         }
     }
 
+    public function loginApi(Request $request)
+    {
+        $incomingFields = $request->validate([
+            'username' => 'required',
+            'password' => 'required',
+        ]);
+
+        if (auth()->attempt($incomingFields)) {
+            $user = User::where('username', $incomingFields['username'])->first();
+            $token = $user->createToken('dogwithblogtoken')->plainTextToken;
+            return $token;
+        }
+
+        return '';
+    }
+
     public function logout()
     {
         event(new OurExampleEvent(['username' => auth()->user()->username, 'action' => 'logout']));

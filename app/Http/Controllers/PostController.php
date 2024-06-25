@@ -36,6 +36,26 @@ class PostController extends Controller
         return redirect("/post/{$newPost->id}")->with('success', 'You have successfully created the post!');
     }
 
+    public function createPostApi(Request $request)
+    {
+        $incomingFields = $request->validate(
+            [
+                'title' => 'required',
+                'body' => 'required',
+            ]
+        );
+        // Strip out potential malicious HTML tags in the fields
+        $incomingFields['title'] = strip_tags($incomingFields['title']);
+        $incomingFields['body'] = strip_tags($incomingFields['body']);
+        $incomingFields['user_id'] = auth()->id();
+
+        $newPost = Post::create($incomingFields);
+
+        dispatch(new SendNewPostEmail(['sendTo' => auth()->user()->email, 'name' => auth()->user()->username, 'title' => $newPost->title]));
+
+        return $newPost->id;
+    }
+
     // Laravel will automatically query the database through the lens of the Post model
     public function viewPost(Post $post)
     {
@@ -47,6 +67,12 @@ class PostController extends Controller
     {
         $post->delete();
         return redirect('/profile/' . auth()->user()->username)->with('success', 'Post successfully deleted!');
+    }
+
+    public function deletePostApi(Post $post, Request $request)
+    {
+        $post->delete();
+        return 'true';
     }
 
     public function showEditForm(Post $post)
